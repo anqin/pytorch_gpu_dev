@@ -1,0 +1,5 @@
+# default_visibility = ['PUBLIC']
+
+cc_library_config(
+    hdrs_missing_severity = 'info',
+)
