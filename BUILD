@@ -26,3 +26,12 @@ cc_binary(
     ],
     warning = 'no'
 )
+
+cc_binary(
+    name = 'gpu_test',
+    srcs = 'gpu_test.cpp',
+    deps = [
+        '//libtorch:torch_all'
+    ],
+    warning = 'no'
+)

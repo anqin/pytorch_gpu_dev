@@ -1,5 +1,10 @@
 # default_visibility = ['PUBLIC']
 
 cc_library_config(
-    hdrs_missing_severity = 'info',
+    hdrs_missing_severity = 'debug',
+)
+
+cc_config(
+    allowed_undeclared_hdrs = load_value('allowed_undeclared_hdrs.conf'),
+    cxxflags = ['-std=c++17']
 )

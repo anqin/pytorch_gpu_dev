@@ -3,7 +3,7 @@ GPU-dev
 
 1. download cuda-specific libtorch (2.3.1 with cuda 11.8)
   
-   $ wget https://download.pytorch.org/libtorch/cu118/libtorch-win-shared-with-deps-2.3.1%2Bcu118.zip
+   $ wget https://download.pytorch.org/libtorch/cu118/libtorch-shared-with-deps-2.3.1%2Bcu118.zip
 
 2. download typhoon-blade, which is the latest version
 
@@ -18,7 +18,7 @@ CPU-dev
 
 1. download cuda-specific libtorch (2.3.1 with cuda 11.8)
   
-   $ wget https://download.pytorch.org/libtorch/cu118/libtorch-win-shared-with-deps-2.3.1%2Bcu118.zip
+   $ wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.3.1%2Bcpu.zip
 
 2. download typhoon-blade, which is the v2.0-alpha
 
