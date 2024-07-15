@@ -4,7 +4,7 @@
 #   Author        : An Qin
 #   Email         : anqin.qin@gmail.com
 #   File Name     : load_model.cpp
-#   Last Modified : 2024-07-10 18:35
+#   Last Modified : 2024-07-15 13:08
 #   Describe      : 
 #
 # ====================================================*/
@@ -53,8 +53,8 @@ int main(int argc, const char* argv[]) {
 
   for (auto& batch : *data_loader) {
       // at::Tensor result = net.forward({batch.data}).toTensor();
-      //batch.data.to(at::kCUDA);
-      at::Tensor result = net->forward(batch.data);
+      auto t = batch.data.to(at::kCUDA);
+      at::Tensor result = net->forward(t);
       std::cout << "result = " << result.slice(1, 0, 5) << std::endl;
       // auto maxResult = result.max(1);
       // auto maxIndex = std::get<1>(maxResult).item<float>();
