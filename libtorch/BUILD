@@ -6,27 +6,33 @@ cc_library(
         "include/torch/csrc/api/include"
     ],
     deps = [
-        ':torch',
+        ':c10',
+        ':c10_cuda',
         ':torch_cpu',
         ':torch_cuda',
         ':torch_global_deps',
-        ':c10',
-        ':c10_cuda',
-        ':c10d_cuda_test'
+        ':torch',
+        ':caffe2_nvrtc',
+        '#cuda'
     ],
     warning = 'no',
+    link_all_symbols=True,
+    defs = ['-Wl,--no-as-needed'],
     visibility = ['PUBLIC']
 )
 
 cc_library(
     name = 'c10',
     hdrs = [],
+    visibility = ['PUBLIC'],
+#    link_all_symbols=True,
     prebuilt=True
 )
 
 cc_library(
     name = 'c10_cuda',
     hdrs = [],
+#    link_all_symbols=True,
     prebuilt=True
 )
 
@@ -65,3 +71,11 @@ cc_library(
     hdrs = [],
     prebuilt=True
 )
+
+cc_library(
+    name = 'caffe2_nvrtc',
+    hdrs = [],
+    prebuilt=True
+)
+
+

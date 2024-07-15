@@ -33,5 +33,7 @@ cc_binary(
     deps = [
         '//libtorch:torch_all'
     ],
+    extra_cppflags = ['-std=c++17'],
+    defs = ['-Wl,--no-as-needed'],
     warning = 'no'
 )
