@@ -4,7 +4,7 @@
 #   Author        : An Qin
 #   Email         : anqin.qin@gmail.com
 #   File Name     : mnist_dataset.cc
-#   Last Modified : 2024-07-16 16:53
+#   Last Modified : 2024-07-16 18:06
 #   Describe      : 
 #
 # ====================================================*/
@@ -13,9 +13,12 @@
 
 #include <torch/torch.h>
 #include <glog/logging.h>
+#include <gflags/gflags.h>
 
 #include "io/path.h"
 #include "executor/simple_executor.h"
+
+DECLARE_int32(tofu_executor_train_epoch_num);
 
 namespace tofu {
 namespace io {
@@ -51,14 +54,38 @@ bool MnistDataSet::Train(uint32_t batch_size) {
     auto train_loader = torch::data::make_data_loader(std::move(train_data_set), batch_size);
 
   
-    // auto loss = std::make_unique<torch::nn::CrossEntropyLoss>(new torch::nn::CrossEntropyLoss());
     executor::TrainContext train_context;
     train_context.learning_rate_ = 1e-2;
     executor_->InitTrainContext(&train_context);
-    // train_context.loss_ = std::move(std::make_shared<torch::nn::CrossEntropyLoss>(new torch::nn::CrossEntropyLoss()));
-    // train_context.loss_ = std::move(loss);
-    // train_context.optimizer_ = new torch::optim::SGD(model->parameters(), torch::optim::SGDOptions(learning_rate).momentum(0.9));
-    return false;
+    
+
+    LOG(INFO) << "Start training with setting: ["
+        << "epoch: " << FLAGS_tofu_executor_train_epoch_num
+        << ", batch size: " << batch_size
+        << ", learing rate: " << train_context.learning_rate_
+        << "]";
+    auto time_start = std::chrono::system_clock::now();
+    for (int32_t i = 1; i <= FLAGS_tofu_executor_train_epoch_num; i++) {
+        train_context.sum_loss_ = 0.0;
+        train_context.train_correct_ = 0;
+
+        for (auto &batch : *train_loader) {
+            executor_->Train(batch.data, batch.target, &train_context);
+        
+        }
+        LOG(INFO) << "[" << i << " / " << FLAGS_tofu_executor_train_epoch_num 
+            << "] loss: " << train_context.sum_loss_ / (train_dataset_size / batch_size)
+            << ", correct: " << 100.0f * train_context.train_correct_ / train_dataset_size;
+    }
+    auto time_end = std::chrono::system_clock::now();
+    LOG(INFO) << "Train time: " 
+        << std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start).count()
+        << "ms";
+
+    LOG(INFO) << "Saving trained model...";
+    executor_->SaveModel();
+
+    return true;
 }
 
 bool MnistDataSet::Predict(uint32_t batch_size) {

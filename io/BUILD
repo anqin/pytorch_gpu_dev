@@ -9,7 +9,8 @@ cc_library(
         '//libtorch:torch',
         '//libtorch:torch_cpu',
         '//libtorch:torch_cuda',
-        '//executor:executor'
+        '//executor:executor',
+        '//:tofu_flags'
     ],
     visibility = ['PUBLIC'],
     warning = 'no'

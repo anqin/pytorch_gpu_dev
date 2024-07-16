@@ -106,17 +106,10 @@ cc_binary(
     extra_linkflags = ['-L/lib/intel64', '-L/usr/local/cuda/lib64'],
     warning = 'no'
 )
-#cc_binary(
-#    name = 'gpu_test',
-#    srcs = 'gpu_test.cpp',
-#    deps = [
-#        '//libtorch_static:torch',
-#        '//libtorch_static:torch_cpu',
-#        '//libtorch_static:torch_cuda',
-#        '//libtorch_static:c10',
-#        '//libtorch_static:c10_cuda',
-#    ],
-#    extra_cppflags = ['-std=c++17'],
-    #defs = ['-Wl,--no-as-needed'],
-#    warning = 'no'
-#)
+
+cc_library(
+    name = 'tofu_flags',
+    hdrs = [],
+    srcs = 'tofu_flags.cc',
+    visibility = ['PUBLIC']
+)
