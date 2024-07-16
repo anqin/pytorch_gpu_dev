@@ -4,7 +4,7 @@
 #   Author        : An Qin
 #   Email         : anqin.qin@gmail.com
 #   File Name     : mnist_dataset.cc
-#   Last Modified : 2024-07-16 14:41
+#   Last Modified : 2024-07-16 16:53
 #   Describe      : 
 #
 # ====================================================*/
@@ -15,6 +15,7 @@
 #include <glog/logging.h>
 
 #include "io/path.h"
+#include "executor/simple_executor.h"
 
 namespace tofu {
 namespace io {
@@ -46,9 +47,17 @@ bool MnistDataSet::Train(uint32_t batch_size) {
     LOG(INFO) << "MINST dataset loaded,"
         << train_dataset_size
         << " training samples found.";
-    constexpr double learning_rate = 1e-2;
+    // constexpr double learning_rate = 1e-2;
     auto train_loader = torch::data::make_data_loader(std::move(train_data_set), batch_size);
 
+  
+    // auto loss = std::make_unique<torch::nn::CrossEntropyLoss>(new torch::nn::CrossEntropyLoss());
+    executor::TrainContext train_context;
+    train_context.learning_rate_ = 1e-2;
+    executor_->InitTrainContext(&train_context);
+    // train_context.loss_ = std::move(std::make_shared<torch::nn::CrossEntropyLoss>(new torch::nn::CrossEntropyLoss()));
+    // train_context.loss_ = std::move(loss);
+    // train_context.optimizer_ = new torch::optim::SGD(model->parameters(), torch::optim::SGDOptions(learning_rate).momentum(0.9));
     return false;
 }
 

@@ -9,7 +9,9 @@ cc_library(
         '//libtorch:torch',
         '//libtorch:torch_cpu',
         '//libtorch:torch_cuda',
+        '//executor:executor'
     ],
+    visibility = ['PUBLIC'],
     warning = 'no'
 )
 
@@ -17,5 +19,6 @@ cc_library(
     name = 'path',
     hdrs = 'path.h',
     srcs = 'path.cc',
+    visibility = ['PUBLIC'],
     warning = 'no'
 )
