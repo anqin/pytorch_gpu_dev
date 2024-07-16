@@ -4,7 +4,7 @@
 #   Author        : An Qin
 #   Email         : anqin.qin@gmail.com
 #   File Name     : load_model.cpp
-#   Last Modified : 2024-07-15 13:08
+#   Last Modified : 2024-07-16 12:56
 #   Describe      : 
 #
 # ====================================================*/
@@ -50,8 +50,10 @@ int main(int argc, const char* argv[]) {
       torch::data::datasets::MNIST("./data").map(
           torch::data::transforms::Stack<>()),
       /*batch_size=*/64);
+ // std::cout << "data_loader type: " << typeid(data_loader).name() << std::endl;
 
   for (auto& batch : *data_loader) {
+      // std::cout << "batch.data = " << batch.data << std::endl;
       // at::Tensor result = net.forward({batch.data}).toTensor();
       auto t = batch.data.to(at::kCUDA);
       at::Tensor result = net->forward(t);
