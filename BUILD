@@ -113,3 +113,30 @@ cc_library(
     srcs = 'tofu_flags.cc',
     visibility = ['PUBLIC']
 )
+
+cc_binary(
+    name = 'tofu_main',
+    srcs = 'tofu_main.cc',
+    deps = [
+        '//io:mnist_dataset',
+        '//executor:executor',
+        '//model:model',
+        ':tofu_flags',
+        '//libtorch:torch',
+        '//libtorch:torch_cpu',
+        '//libtorch:torch_cuda',
+        '//libtorch:c10',
+        '//libtorch:c10_cuda',
+        '//libtorch:kineto',
+        '#cuda',
+        '#nvrtc',
+        '#nvToolsExt',
+        '#cudart'
+    ],
+    extra_cppflags = ['-D_GLIBCXX_USE_CXX11_ABI=0', '-rdynamic'],
+    extra_linkflags = ['-L/lib/intel64', 
+                       '-L/usr/local/cuda/lib64',
+                       '-L/opt/conda/lib'],
+    warning = 'no'
+)
+

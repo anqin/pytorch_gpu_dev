@@ -4,7 +4,7 @@
 #   Author        : An Qin
 #   Email         : anqin.qin@gmail.com
 #   File Name     : mnist_dataset.cc
-#   Last Modified : 2024-07-16 18:06
+#   Last Modified : 2024-07-16 18:29
 #   Describe      : 
 #
 # ====================================================*/
@@ -19,6 +19,7 @@
 #include "executor/simple_executor.h"
 
 DECLARE_int32(tofu_executor_train_epoch_num);
+DECLARE_int32(tofu_executor_train_batch_size);
 
 namespace tofu {
 namespace io {
@@ -35,15 +36,16 @@ bool MnistDataSet::IsPathExist() {
 
 bool MnistDataSet::Download() { return false; }
 
-bool MnistDataSet::Train(uint32_t batch_size) {
+bool MnistDataSet::Train() {
     if (!IsPathExist()) {
         LOG(ERROR) << "Invalid path: " << dataset_path_;
         return false;
     }
 
+    uint32_t batch_size = FLAGS_tofu_executor_train_batch_size;
     std::string train_dataset_file = dataset_path_ + "/train-images-idx3-ubyte";
     auto train_data_set = torch::data::datasets::MNIST(train_dataset_file, 
-                                                       torch::data::datasets::MNIST::Mode::kTrain)
+                                torch::data::datasets::MNIST::Mode::kTrain)
         .map(torch::data::transforms::Normalize<>(0.5, 0.5))
         .map(torch::data::transforms::Stack<>());
     const std::size_t train_dataset_size = train_data_set.size().value();
@@ -51,7 +53,8 @@ bool MnistDataSet::Train(uint32_t batch_size) {
         << train_dataset_size
         << " training samples found.";
     // constexpr double learning_rate = 1e-2;
-    auto train_loader = torch::data::make_data_loader(std::move(train_data_set), batch_size);
+    auto train_loader = torch::data::make_data_loader(
+                                std::move(train_data_set), batch_size);
 
   
     executor::TrainContext train_context;

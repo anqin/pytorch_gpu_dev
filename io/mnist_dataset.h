@@ -4,7 +4,7 @@
 #   Author        : An Qin
 #   Email         : anqin.qin@gmail.com
 #   File Name     : mnist_dataset.h
-#   Last Modified : 2024-07-16 14:18
+#   Last Modified : 2024-07-16 18:29
 #   Describe      : 
 #
 # ====================================================*/
@@ -31,7 +31,7 @@ public:
     bool IsPathExist();
     bool Download();
 
-    bool Train(uint32_t batch_size);
+    bool Train();
     bool Predict(uint32_t batch_size);
 
 private:
