@@ -13,7 +13,8 @@ cc_library(
         '//libtorch:c10',
         '//libtorch:c10_cuda',
         '//libtorch:kineto',
-        '//:tofu_flags'
+        '//:tofu_flags',
+        '//executor:executor'
     ],
     visibility = ['PUBLIC'],
     warning = 'no'
