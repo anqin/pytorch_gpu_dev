@@ -168,8 +168,8 @@ int main(int argc, const char *argv[]) {
             }
             auto params_i = slave_models[id].module_->parameters();
             for (uint32_t pi = 0; pi < params.size(); ++pi) {
-                Tensor &grad = params[pi].mutable_grad();
-                Tensor gradj = params_j[pi].grad();
+                auto& grad = params[pi].mutable_grad();
+                auto gradj = params_i[pi].grad();
                 grad.add_(gradj.to(devices[main_device_id]));
             }
         }
