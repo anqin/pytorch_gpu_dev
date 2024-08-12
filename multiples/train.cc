@@ -167,6 +167,9 @@ int main(int argc, const char *argv[]) {
                 for (auto& r : slave_models) {
                     sum_loss += r.sum_loss_;
                     train_correct += r.train_correct_;
+
+                    r.sum_loss_ = 0;
+                    r.train_correct_ = 0;
                 }
 
                 std::cout << "[" << epoch_no << " / " << epoch_num << "]"
