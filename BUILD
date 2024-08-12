@@ -108,7 +108,7 @@ cc_binary(
 )
 
 cc_binary(
-    name = 'mutiple_gpu_test',
+    name = 'mutiple_gpu_train',
     srcs = [
         'multiples/train.cc',
         'multiples/simple_net.cc',
@@ -131,6 +131,53 @@ cc_binary(
     warning = 'no'
 )
 
+cc_binary(
+    name = 'mutiple_gpu_org',
+    srcs = [
+        'multiples/train_org.cc',
+        'multiples/simple_net.cc',
+        'multiples/simple_net.h',
+    ],
+    deps = [
+        '//libtorch:torch',
+        '//libtorch:torch_cpu',
+        '//libtorch:torch_cuda',
+        '//libtorch:c10',
+        '//libtorch:c10_cuda',
+        '//libtorch:kineto',
+        '#cuda',
+        '#nvrtc',
+        '#nvToolsExt',
+        '#cudart'
+    ],
+    extra_cppflags = ['-D_GLIBCXX_USE_CXX11_ABI=0'],
+    extra_linkflags = ['-L/lib/intel64', '-L/usr/local/cuda/lib64'],
+    warning = 'no'
+)
+
+cc_binary(
+    name = 'mutiple_gpu_predict',
+    srcs = [
+        'multiples/test.cc',
+        'multiples/simple_net.cc',
+        'multiples/simple_net.h',
+    ],
+    deps = [
+        '//libtorch:torch',
+        '//libtorch:torch_cpu',
+        '//libtorch:torch_cuda',
+        '//libtorch:c10',
+        '//libtorch:c10_cuda',
+        '//libtorch:kineto',
+        '#cuda',
+        '#nvrtc',
+        '#nvToolsExt',
+        '#cudart'
+    ],
+    extra_cppflags = ['-D_GLIBCXX_USE_CXX11_ABI=0'],
+    extra_linkflags = ['-L/lib/intel64', '-L/usr/local/cuda/lib64'],
+    warning = 'no'
+)
 ###################################
 cc_library(
     name = 'tofu_flags',

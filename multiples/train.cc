@@ -86,13 +86,6 @@ int main(int argc, const char *argv[]) {
     GetLocalDevices(&devices);
     uint32_t main_device_id = 0;
 
-    // torch::Device device(torch::kCPU);
-    // if (torch::cuda::is_available()) {
-    //     std::cout << torch::cuda::device_count() << " cuda is available, use GPU." << std::endl;
-    //     device = torch::kCUDA;
-    // } else {
-    //     std::cout << "cuda is NOT available, use CPU." << std::endl;
-    // }
     auto train_data_set = torch::data::datasets::MNIST(mnist_dataset_path, 
                                                        torch::data::datasets::MNIST::Mode::kTrain)
                               .map(torch::data::transforms::Normalize<>(0.5, 0.5))
@@ -138,6 +131,7 @@ int main(int argc, const char *argv[]) {
 
         std::vector<std::thread> threads; 
         for (uint32_t i = 0; i < devices.size(); ++i) {
+            slave_models[i].module_->to(devices[i]);
             auto inputs = batch_it->data.to(devices[i]);
             auto labels = batch_it->target.to(devices[i]);
 
