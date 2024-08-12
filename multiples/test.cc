@@ -3,9 +3,9 @@
 #include <filesystem>
 
 
-// #include "simple_net.h"
+#include "simple_net.h"
 // #include "lenet5.h"
-#include "alex_net.h"
+// #include "alex_net.h"
 
 int main(int argc, const char *argv[])
 {
@@ -68,9 +68,9 @@ int main(int argc, const char *argv[])
     constexpr std::size_t batch_size = 64;
     auto test_loader = torch::data::make_data_loader(std::move(test_data_set), batch_size);
 
-    // SimpleNet model(28 * 28, 300, 100, 10);
+    SimpleNet model(28 * 28, 300, 100, 10);
     // LeNet5 model(28);
-    AlexNet model(28, 1);
+    // AlexNet model(28, 1);
 
     model->to(device);
 
