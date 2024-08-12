@@ -66,14 +66,15 @@ void PrepareModelRunner(const std::vector<torch::Device>& devices,
     }
 }
 
-void ConcurrentTask(ModelRunner* runner, torch::Tensor* input,
-                      torch::Tensor* labels) {
-    auto outputs = runner->module_->forward(*input);
-    auto loss = (*runner->criterion_)(outputs, *labels);
+void ConcurrentTask(ModelRunner* runner, torch::Tensor& input,
+                      torch::Tensor& labels) {
+    // runner->loss_->zero_grad();
+    auto outputs = runner->module_->forward(input);
+    auto loss = (*runner->criterion_)(outputs, labels);
 
     runner->sum_loss_ += loss.item().toDouble();
     auto [value, id] = torch::max(outputs.data(), 1);
-    runner->train_correct_ += torch::sum(id == *labels).item().toInt();
+    runner->train_correct_ += torch::sum(id == labels).item().toInt();
 }
 
 int main(int argc, const char *argv[]) {
@@ -123,32 +124,46 @@ int main(int argc, const char *argv[]) {
     // model->train();
     std::cout << "start training with setting: [epoch: " << epoch_num 
         << ", batch size: " << batch_size 
-        << ", learing rate: " << learning_rate 
+        << ", learing rate: " << learning_rate
+        << ", device num: " << devices.size()
         << "]" << std::endl;
     auto time_start = std::chrono::system_clock::now();
 
+    bool is_epoch = false;
     uint32_t epoch_no = 0;
     auto batch_it = train_loader->begin();
     while (epoch_no < epoch_num) {
-       
+        double sum_loss = 0.0;
+        int train_correct = 0;
+
+        std::vector<std::thread> threads; 
         for (uint32_t i = 0; i < devices.size(); ++i) {
             auto inputs = batch_it->data.to(devices[i]);
             auto labels = batch_it->target.to(devices[i]);
 
-            std::packaged_task<void(ModelRunner* runner, 
-                                    torch::Tensor* input,
-                                    torch::Tensor* labels)> task(ConcurrentTask);
-            std::thread t(std::move(task), &slave_models[i], &inputs, &labels);
-            t.detach();
+            // threads.push_back(std::thread([&slave_models, i, &devices, &batch_it]() {
+            threads.push_back(std::thread([&slave_models, i, inputs, labels]() {
+                // auto inputs = batch_it->data.to(devices[i]);
+                // auto labels = batch_it->target.to(devices[i]);
+                
+                slave_models[i].loss_->zero_grad();
+                auto outputs = slave_models[i].module_->forward(inputs);
+                auto loss = (*slave_models[i].criterion_)(outputs, labels);
+                loss.backward();
+                slave_models[i].loss_->step();
+
+                slave_models[i].sum_loss_ += loss.item().toDouble();
+                auto [value, id] = torch::max(outputs.data(), 1);
+                slave_models[i].train_correct_ += torch::sum(id == labels).item().toInt();
+            }));
 
             ++batch_it;
             if (batch_it == train_loader->end()) {
                 ++epoch_no;
-                if (epoch_no == epoch_num) break;
+                is_epoch = true;
+                batch_it = train_loader->begin();
 
                 // print statics
-                double sum_loss = 0.0;
-                int train_correct = 0;
                 for (auto& r : slave_models) {
                     sum_loss += r.sum_loss_;
                     train_correct += r.train_correct_;
@@ -158,12 +173,20 @@ int main(int argc, const char *argv[]) {
                   << " loss: " << sum_loss / (train_dataset_size / batch_size)
                   << ", correct: " << 100.0f * train_correct / train_dataset_size 
                   << std::endl;
+                
+                if (epoch_no == epoch_num) break;
             }
         }
 
-        std::cout << "threads create finish" << std::endl;
-    
-        // Reduce gradients on device #0
+        for (auto& t : threads) {
+            t.join();
+        }
+        // std::cout << "threads create finish" << std::endl;
+   
+        if (!is_epoch) continue;
+
+        std::cout << "update gradient, epoch: " << epoch_no << std::endl;
+        // Reduce gradients on device #0 for each epoch
         auto params = slave_models[main_device_id].module_->parameters();
         for (uint32_t id = 0; id < devices.size(); ++id) {
             if (id == main_device_id) {
@@ -172,11 +195,24 @@ int main(int argc, const char *argv[]) {
             auto params_i = slave_models[id].module_->parameters();
             for (uint32_t pi = 0; pi < params.size(); ++pi) {
                 auto& grad = params[pi].mutable_grad();
-                auto gradj = params_i[pi].grad();
-                grad.add_(gradj.to(devices[main_device_id]));
+                auto grad_i = params_i[pi].grad();
+                grad.add_(grad_i.to(devices[main_device_id]));
             }
         }
-
+        std::cout << "broadcast weight to all, epoch: " << epoch_no << std::endl;
+        for (uint32_t id = 0; id < devices.size(); ++id) {
+            if (id == main_device_id) {
+                continue;
+            }
+            auto params_i = slave_models[id].module_->parameters();
+            for (uint32_t pi = 0; pi < params.size(); ++pi) {
+                torch::NoGradGuard guard;
+                torch::Tensor weight = params[pi];
+                params_i[pi].copy_(weight.to(devices.at(id)));
+                params_i[pi].grad().zero_();
+            }
+        }
+        is_epoch = false;
     }
 /*
     for (int i = 1; i <= epoch_num; i++) {
