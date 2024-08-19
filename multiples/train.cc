@@ -15,8 +15,6 @@
 // #include "alex_net.h"
 
 
-typedef torch::data::Example<std::vector<at::Tensor>,
-                           std::vector<at::Tensor>>  TorchBatch;
 
 void GetLocalDevices(std::vector<torch::Device>* devices) {
     if (!torch::cuda::is_available()) {
@@ -65,21 +63,21 @@ void PrepareModelRunner(const std::vector<torch::Device>& devices,
         r.module_->train();
     }
 }
-
-void ConcurrentTask(ModelRunner* runner, torch::Tensor& input,
-                      torch::Tensor& labels) {
-    // runner->loss_->zero_grad();
-    auto outputs = runner->module_->forward(input);
-    auto loss = (*runner->criterion_)(outputs, labels);
-
-    runner->sum_loss_ += loss.item().toDouble();
-    auto [value, id] = torch::max(outputs.data(), 1);
-    runner->train_correct_ += torch::sum(id == labels).item().toInt();
-}
-
+//
+// void ConcurrentTask(ModelRunner* runner, torch::Tensor& input,
+//                       torch::Tensor& labels) {
+//     // runner->loss_->zero_grad();
+//     auto outputs = runner->module_->forward(input);
+//     auto loss = (*runner->criterion_)(outputs, labels);
+//
+//     runner->sum_loss_ += loss.item().toDouble();
+//     auto [value, id] = torch::max(outputs.data(), 1);
+//     runner->train_correct_ += torch::sum(id == labels).item().toInt();
+// }
+//
 int main(int argc, const char *argv[]) {
     std::string mnist_dataset_path = "./data";
-    std::size_t epoch_num = 5;
+    std::size_t epoch_num = 8;
     std::size_t batch_size = 32;
 
     std::vector<torch::Device> devices;

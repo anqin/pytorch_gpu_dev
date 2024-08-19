@@ -132,6 +132,31 @@ cc_binary(
 )
 
 cc_binary(
+    name = 'mutiple_gpu_new',
+    srcs = [
+        'multiples/train_new.cc',
+        'multiples/simple_net.cc',
+        'multiples/simple_net.h',
+    ],
+    deps = [
+        '//libtorch:torch',
+        '//libtorch:torch_cpu',
+        '//libtorch:torch_cuda',
+        '//libtorch:c10',
+        '//libtorch:c10_cuda',
+        '//libtorch:kineto',
+        '#cuda',
+        '#nvrtc',
+        '#nvToolsExt',
+        '#cudart'
+    ],
+    extra_cppflags = ['-D_GLIBCXX_USE_CXX11_ABI=0'],
+    extra_linkflags = ['-L/lib/intel64', '-L/usr/local/cuda/lib64'],
+    incs = ['/usr/local/cuda-11.8/include'],
+    warning = 'no'
+)
+
+cc_binary(
     name = 'mutiple_gpu_org',
     srcs = [
         'multiples/train_org.cc',
